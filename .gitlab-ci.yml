@@ -1,0 +1,86 @@
+stages:
+  - version
+  - lint
+  - buildPublish
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+  VERSION_FILE: version.sh
+  GIT_DEPTH: 500
+  DOCKER_VERSION: 19.03.12
+  JDK_VERSION: 8.0.275.hs-adpt
+  SBT_VERSION: 1.3.10
+  IMAGE_NAME: biodatageeks/spark-base-k8s
+  SPARK_VERSION: 3.1.1
+  BASE_IMAGE: ubuntu:20.04
+
+
+# --------------------------------- STAGE: version ---------------------------------------------------------------------
+version-branch:
+  stage: version
+  image:
+    name: mdomke/git-semver:v4.0.1
+    entrypoint: [""]
+  script:
+    - cd /builds/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME && git-semver --format x.y.z+m | sed 's/+/-/g' | xargs -I {} echo "export VERSION={}" > $VERSION_FILE
+    - cat $VERSION_FILE
+  artifacts:
+    paths:
+      - $VERSION_FILE
+  tags: [ docker ]
+  except: [ main, tags ]
+
+version-tag:
+  stage: version
+  image:
+    name: mdomke/git-semver:v4.0.1
+    entrypoint: [""]
+  script:
+    - cd /builds/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME && git-semver --no-hash --no-pre | xargs -I {} echo "export VERSION={}" > $VERSION_FILE
+    - cat $VERSION_FILE
+  artifacts:
+    paths:
+      - $VERSION_FILE
+  tags: [ docker ]
+  only:
+    - tags
+  except:
+    - branches
+
+lint:
+  stage: lint
+  image:
+    name: hadolint/hadolint:v1.23.0-debian
+  script:
+    - hadolint --config conf/hadolint.yaml Dockerfile
+  artifacts:
+    paths:
+      - $VERSION_FILE
+  tags: [ docker ]
+  except: [ master ]
+
+
+.buildPublish: &buildPublish
+  image:
+    name: docker:$DOCKER_VERSION
+  before_script:
+    - source $VERSION_FILE
+    - docker login -u $DOCKER_USER -p $DOCKER_PASSWD docker.io
+  script:
+    - docker build
+      --pull
+      --no-cache
+      --build-arg BASE_IMAGE=$BASE_IMAGE
+      --build-arg JAVA_VERSION=$JDK_VERSION
+      --build-arg SCALA_VERSION=$SCALA_VERSION
+      --build-arg SBT_VERSION=$SBT_VERSION
+      --build-arg SPARK_VERSION=$SPARK_VERSION
+      -t $IMAGE_NAME:$SPARK_VERSION-$VERSION
+      .
+    - docker push $IMAGE_NAME:$SPARK_VERSION-$VERSION
+  tags: [ docker ]
+
+buildPublishDefault:
+  stage: buildPublish
+  <<: *buildPublish
+  except: [ master ]

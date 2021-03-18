@@ -1,0 +1,3 @@
+ignored:
+  - DL3006 #Always tag the version of an image explicitly - no use in case of taking from build arg
+  - DL3033 # warning: Specify version for os package

@@ -13,7 +13,7 @@ variables:
   IMAGE_NAME: biodatageeks/spark-base-k8s
   SPARK_VERSION: 3.1.1
   SCALA_VERSION: 2.12.10
-  HADOOP_VERSION: 2.7
+  HADOOP_VERSION: "2.7"
   BASE_IMAGE: ubuntu:20.04
 
 

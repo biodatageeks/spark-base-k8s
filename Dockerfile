@@ -8,18 +8,17 @@ ARG SPARK_VERSION
 ARG HADOOP_VERSION
 
 ARG spark_uid=185
-    # sed -i 's/http:\/\/deb.\(.*\)/https:\/\/deb.\1/g' /etc/apt/sources.list && \
-    # ln -s /lib /lib64 && \
 
 # disable tzdata configuration
 ENV DEBIAN_FRONTEND=noninteractive 
 
 # hadolint ignore=DL3008,DL3013,DL4005
 RUN set -ex && \
+    sed -i 's/http:\/\/deb.\(.*\)/https:\/\/deb.\1/g' /etc/apt/sources.list && \
     apt-get update && \
+    ln -s /lib /lib64 && \
     apt-get install --no-install-recommends -qq -y bash tini libc6 libpam-modules krb5-user libnss3 procps curl zip unzip python3-pip && \
     pip3 install --no-cache-dir --upgrade pip setuptools && \
-    mkdir -p /opt/spark && \
     mkdir -p /opt/spark/work-dir && \
     rm /bin/sh && \
     ln -s /bin/bash /bin/sh && \
@@ -39,7 +38,6 @@ RUN . "$HOME/.sdkman/bin/sdkman-init.sh" && sdk use java ${JAVA_VERSION}
 
 # Spark installation
 WORKDIR /tmp
-# Using the preferred mirror to download Spark
 # hadolint ignore=SC2046
 RUN curl -O "https://downloads.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz"
 RUN tar xvf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz && \
@@ -57,3 +55,4 @@ RUN chmod g+w /opt/spark/work-dir
 RUN chmod a+x /opt/decom.sh
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
+USER ${spark_uid}

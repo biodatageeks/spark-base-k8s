@@ -14,8 +14,8 @@ ARG spark_uid=185
 ENV DEBIAN_FRONTEND=noninteractive 
 
 RUN set -ex && \
-    apt update && apt-get upgrade -y && \
-    apt install -qq -y bash tini libc6 libpam-modules krb5-user libnss3 procps curl zip unzip python3-pip && \
+    apt-get update && \
+    apt-get install -qq -y bash tini libc6 libpam-modules krb5-user libnss3 procps curl zip unzip python3-pip && \
     pip3 install --upgrade pip setuptools && \
     mkdir -p /opt/spark && \
     mkdir -p /opt/spark/work-dir && \
@@ -29,9 +29,9 @@ ENV HOME=/tmp/sdkman
 
 RUN curl -s https://get.sdkman.io | bash
 RUN chmod a+x "$HOME/.sdkman/bin/sdkman-init.sh"
-RUN source "$HOME/.sdkman/bin/sdkman-init.sh" && sdk install java ${JAVA_VERSION}
-RUN source "$HOME/.sdkman/bin/sdkman-init.sh" && sdk install scala ${SCALA_VERSION}
-RUN source "$HOME/.sdkman/bin/sdkman-init.sh" && sdk use java ${JAVA_VERSION}
+RUN . "$HOME/.sdkman/bin/sdkman-init.sh" && sdk install java ${JAVA_VERSION}
+RUN . "$HOME/.sdkman/bin/sdkman-init.sh" && sdk install scala ${SCALA_VERSION}
+RUN . "$HOME/.sdkman/bin/sdkman-init.sh" && sdk use java ${JAVA_VERSION}
 
 # Spark installation
 WORKDIR /tmp
@@ -46,8 +46,7 @@ RUN tar xvf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz && \
 
 # Configure Spark
 ENV SPARK_HOME=/opt/spark
-# ENV PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin
-
+ENV PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin
 
 WORKDIR /opt/spark/work-dir
 RUN chmod g+w /opt/spark/work-dir

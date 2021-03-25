@@ -1,4 +1,5 @@
 ARG BASE_IMAGE
+# hadolint ignore=DL3006
 FROM $BASE_IMAGE
 
 ARG JAVA_VERSION
@@ -13,21 +14,24 @@ ARG spark_uid=185
 # disable tzdata configuration
 ENV DEBIAN_FRONTEND=noninteractive 
 
+# hadolint ignore=DL3008,DL3013,DL4005
 RUN set -ex && \
     apt-get update && \
-    apt-get install -qq -y bash tini libc6 libpam-modules krb5-user libnss3 procps curl zip unzip python3-pip && \
-    pip3 install --upgrade pip setuptools && \
+    apt-get install --no-install-recommends -qq -y bash tini libc6 libpam-modules krb5-user libnss3 procps curl zip unzip python3-pip && \
+    pip3 install --no-cache-dir --upgrade pip setuptools && \
     mkdir -p /opt/spark && \
     mkdir -p /opt/spark/work-dir && \
     rm /bin/sh && \
-    ln -sv /bin/bash /bin/sh && \
+    ln -s /bin/bash /bin/sh && \
     echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
     chgrp root /etc/passwd && chmod ug+rw /etc/passwd && \
     rm -rf /var/cache/apt/* 
 
 ENV HOME=/tmp/sdkman
 
-RUN curl -s https://get.sdkman.io | bash
+# hadolint ignore=DL4006
+RUN set -ex && \
+    curl -s https://get.sdkman.io | bash
 RUN chmod a+x "$HOME/.sdkman/bin/sdkman-init.sh"
 RUN . "$HOME/.sdkman/bin/sdkman-init.sh" && sdk install java ${JAVA_VERSION}
 RUN . "$HOME/.sdkman/bin/sdkman-init.sh" && sdk install scala ${SCALA_VERSION}

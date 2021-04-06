@@ -8,10 +8,12 @@ variables:
   VERSION_FILE: version.sh
   GIT_DEPTH: 500
   DOCKER_VERSION: 19.03.12
-  JDK_VERSION: 8.0.275.hs-adpt
+  JDK_VERSION: 11.0.10.hs-adpt
   SBT_VERSION: 1.3.10
   IMAGE_NAME: biodatageeks/spark-base-k8s
-  SPARK_VERSION: 3.1.1
+  SPARK_VERSION: 3.0.1
+  SCALA_VERSION: 2.12.10
+  HADOOP_VERSION: "2.7"
   BASE_IMAGE: ubuntu:20.04
 
 
@@ -73,7 +75,7 @@ lint:
       --build-arg BASE_IMAGE=$BASE_IMAGE
       --build-arg JAVA_VERSION=$JDK_VERSION
       --build-arg SCALA_VERSION=$SCALA_VERSION
-      --build-arg SBT_VERSION=$SBT_VERSION
+      --build-arg HADOOP_VERSION=$HADOOP_VERSION
       --build-arg SPARK_VERSION=$SPARK_VERSION
       -t $IMAGE_NAME:$SPARK_VERSION-$VERSION
       .

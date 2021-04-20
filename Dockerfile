@@ -42,8 +42,9 @@ RUN tar xvf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz && \
     cp /opt/spark/kubernetes/dockerfiles/spark/*.sh /opt/
 
 # Configure Spark
+ENV JAVA_HOME=$HOME/.sdkman/candidates/java/current
 ENV SPARK_HOME=/opt/spark
-ENV PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin
+ENV PATH=$PATH:$SPARK_HOME/bin
 
 WORKDIR /opt/spark/work-dir
 RUN chmod g+w /opt/spark/work-dir
